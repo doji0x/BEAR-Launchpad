@@ -21,6 +21,7 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminOnlyRoute from '@/components/AdminOnlyRoute';
 import PublicInscribe from '@/pages/PublicInscribe';
 import LaunchCoin from '@/pages/LaunchCoin';
 import EditCoin from '@/pages/EditCoin';
@@ -60,7 +61,11 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/launch" element={<Navigate to="/launch-coin" replace />} />
       <Route path="/inscribe" element={<PublicInscribe />} />
-      <Route path="/launch-coin" element={<LaunchCoin />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?returnTo=%2Flaunch-coin" replace />} />}>
+        <Route element={<AdminOnlyRoute />}>
+          <Route path="/launch-coin" element={<LaunchCoin />} />
+        </Route>
+      </Route>
       <Route path="/edit-coin" element={<EditCoin />} />
       <Route path="/atomic-v1" element={<Navigate to="/launch-coin" replace />} />
       <Route path="/feed" element={<Feed />} />

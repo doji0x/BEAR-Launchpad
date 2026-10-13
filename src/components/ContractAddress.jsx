@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const address = '6ZdCWrLhmBJmoLCL8reNCBxqJGBxXgQyM2PcDo4kpump';
+const address = '49PU6ENTpYc3zkhgCruzCSBzgVAdix5muP2oVzRGpump';
 
 export default function ContractAddress() {
   const [status, setStatus] = useState('');

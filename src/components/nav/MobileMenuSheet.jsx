@@ -5,14 +5,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { usePhantomWallet } from '@/contexts/PhantomWalletContext';
 import WalletButton from '@/components/wallet/WalletButton';
 import BrandIdentity from '@/components/BrandIdentity';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function MobileMenuSheet({ triggerClassName = 'flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground transition hover:text-primary', showLabel = true }) {
   const [open, setOpen] = useState(false);
   const { address } = usePhantomWallet();
+  const { user, isAuthenticated } = useAuth();
   const main = [
     { to: '/', label: 'BEAR', icon: Home },
     { to: '/inscribe', label: 'Inscribe', icon: Plus },
-    { to: '/launch-coin', label: 'Launch coin', icon: Rocket },
+    ...(isAuthenticated && user?.role === 'admin' ? [{ to: '/launch-coin', label: 'Launch coin', icon: Rocket }] : []),
     { to: '/feed', label: 'Feed', icon: MessageSquare },
     { to: address ? `/profile/${address}` : '/feed', label: 'Profile', icon: User }
   ];
