@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import BrandIdentity from '@/components/BrandIdentity';
 import { Link } from 'react-router-dom';
 import { X, FileCog, Loader2, CheckCircle2, Search, RotateCcw, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -25,7 +26,7 @@ export default function AdminMetadataOverride() {
   const launch = state.launch;
   return <div className="validate-surface min-h-screen text-foreground">
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl"><div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-2"><Link to="/admin/links" aria-label="Back to launch links" className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-card"><X className="h-5 w-5" /></Link><div><p className="font-mono text-[10px] leading-none tracking-[0.3em] text-primary">ADMIN · METADATA</p><h1 className="font-display font-semibold leading-tight">Served metadata override</h1></div></div></header>
-    <main className="mx-auto max-w-3xl px-4 py-8 pb-24 sm:px-6">
+    <main className="mx-auto max-w-3xl px-4 py-8 pb-24 sm:px-6"><BrandIdentity className="mb-5" />
       <div className="mb-7 flex items-start gap-3"><span className="rounded-2xl bg-primary p-2.5 text-primary-foreground"><FileCog size={20} /></span><div><h2 className="font-display text-3xl font-bold tracking-tight">Override served metadata</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Change the name, symbol, description, and image that the metadata URI serves to pump.fun and terminals. Nothing is written to Solana — the inscription keeps its original values and every change is written to the audit log.</p></div></div>
       <form onSubmit={find} className="rounded-2xl border border-border bg-card p-5">
         <Label htmlFor="override-coin" className="text-xs text-muted-foreground">Coin mint address</Label>

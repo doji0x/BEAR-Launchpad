@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import BrandIdentity from '@/components/BrandIdentity';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -23,6 +24,7 @@ export default function PageNotFound({}) {
         <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
             <div className="max-w-md w-full">
                 <div className="text-center space-y-6">
+                    <BrandIdentity />
                     {/* 404 Error Code */}
                     <div className="space-y-2">
                         <h1 className="text-7xl font-light text-slate-300">404</h1>

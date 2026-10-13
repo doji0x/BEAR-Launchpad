@@ -83,14 +83,14 @@ export default function Home() {
     <footer className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 border-t border-border px-4 py-7 text-center text-[10px] text-muted-foreground">
       <div className="flex w-full items-center justify-between">
         <span className="flex items-center gap-2 font-display font-semibold tracking-wider text-foreground">
-          <Image src="https://media.base44.com/images/public/6aa8d3c82020abebe308c467/b4b8f84ae_Screenshot2026-09-26at125609PM.png" alt="Burn" className="h-7 w-7 rounded-md ring-1 ring-primary/30" />BURN
+          <Image src="https://media.base44.com/images/public/6aa8d3c82020abebe308c467/1eaceafbf_8D366CA6-F323-4E8E-8069-DA3421FD82BF.png" alt="BEAR — The Black Bear" className="h-7 w-7 rounded-md ring-1 ring-primary/30" />BEAR
         </span>
         <button onClick={() => setAbout(true)} className="flex items-center gap-1 hover:text-primary">Metaplex + Solana v1 + LibrePlex <ArrowUpRight size={12} /></button>
       </div>
       <nav aria-label="External links" className="flex items-center gap-4">
         <a href="https://github.com/doji0x/Spunk" target="_blank" rel="noreferrer" className="hover:text-primary">Docs</a>
         <a href="https://x.com/humanevolvd?s=11" target="_blank" rel="noreferrer" className="hover:text-primary">X</a>
-        <span className="font-mono">ON-CHAIN CURATION</span>
+        <span className="font-mono">The Black Bear</span>
       </nav>
     </footer>
     

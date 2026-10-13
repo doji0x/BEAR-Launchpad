@@ -3,7 +3,7 @@ const sol = value => value === null ? 'Unavailable' : `${(Number(value || 0) / 1
 
 export default function BuybackSummary({ data }) {
   const { totals, state, claim } = data;
-  const cards = [['Treasury wallet balance', data.walletBalance], ['Escrow claimable · estimate', data.unclaimedSol], ['Verified claims · current flow', totals.claimed], ['Burn-specific claims', totals.mintClaimed], ['Pooled creator-wallet claims', totals.pooledClaimed], ['Claim network fees', totals.claimFees]];
+  const cards = [['Treasury wallet balance', data.walletBalance], ['Escrow claimable · estimate', data.unclaimedSol], ['Verified claims · current flow', totals.claimed], ['BEAR-specific claims', totals.mintClaimed], ['Pooled creator-wallet claims', totals.pooledClaimed], ['Claim network fees', totals.claimFees]];
   return <>
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{cards.map(([label, value]) => <div key={label} className="rounded-2xl border border-border bg-card p-5"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-2 font-mono text-xl text-primary">{sol(value)}</p></div>)}</div>
     <section className="mt-5 space-y-3 rounded-2xl border border-border bg-card p-5 text-sm">
@@ -13,7 +13,7 @@ export default function BuybackSummary({ data }) {
       {claim?.escrow && <p className="break-all font-mono text-xs text-muted-foreground">Escrow: {claim.escrow}</p>}
       {data.claimError && <p role="alert" className="text-destructive">Reward lookup failed: {data.claimError}</p>}
       {state.lastOutcome && <p>{state.lastOutcome}</p>}{state.lastError && <p className="text-destructive">{state.lastError}</p>}
-      <p className="text-xs leading-5 text-muted-foreground">After activation, 80% of eligible automated Burn reward receipts funds Burn purchases and burns; 20% stays in the treasury. Manual escrow claims stay in the wallet and do not fund the reward cycle. Deposits, reclaimed rent, historical wallet funds and pooled creator rewards never increase the purchase budget. Network fees use a separately funded operating reserve.</p>
+      <p className="text-xs leading-5 text-muted-foreground">After activation, 80% of eligible automated BEAR reward receipts funds BEAR purchases and burns; 20% stays in the treasury. Manual escrow claims stay in the wallet and do not fund the reward cycle. Deposits, reclaimed rent, historical wallet funds and pooled creator rewards never increase the purchase budget. Network fees use a separately funded operating reserve.</p>
     </section>
   </>;
 }

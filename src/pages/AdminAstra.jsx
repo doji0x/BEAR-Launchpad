@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import BrandIdentity from '@/components/BrandIdentity';
 import { Link } from 'react-router-dom';
 import { History, MessagesSquare, Plus, Sparkles, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -29,7 +30,7 @@ export default function AdminAstra() {
         <Button variant="outline" size="sm" disabled={chat.busy} onClick={() => { chat.reset(); setTab('chat'); }} className="gap-1.5"><Plus size={14} />New chat</Button>
       </div>
     </header>
-    <main className="mx-auto max-w-3xl px-4 pb-16 pt-6 sm:px-6">
+    <main className="mx-auto max-w-3xl px-4 pb-16 pt-6 sm:px-6"><BrandIdentity className="mb-5" />
       <Tabs value={tab} onValueChange={setTab}>
         <div className="sticky top-14 z-30 -mx-4 border-b border-border/60 bg-background/90 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6">
           <TabsList className="w-full">

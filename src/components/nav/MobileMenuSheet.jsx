@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { usePhantomWallet } from '@/contexts/PhantomWalletContext';
 import WalletButton from '@/components/wallet/WalletButton';
+import BrandIdentity from '@/components/BrandIdentity';
 
 export default function MobileMenuSheet({ triggerClassName = 'flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground transition hover:text-primary', showLabel = true }) {
   const [open, setOpen] = useState(false);
   const { address } = usePhantomWallet();
   const main = [
-    { to: '/', label: 'Burn', icon: Home },
+    { to: '/', label: 'BEAR', icon: Home },
     { to: '/inscribe', label: 'Inscribe', icon: Plus },
     { to: '/launch-coin', label: 'Launch coin', icon: Rocket },
     { to: '/feed', label: 'Feed', icon: MessageSquare },
@@ -22,6 +23,7 @@ export default function MobileMenuSheet({ triggerClassName = 'flex h-full w-full
     </SheetTrigger>
     <SheetContent side="right" className="w-[82vw] max-w-xs overflow-y-auto">
       <SheetHeader><SheetTitle className="gold-text font-display tracking-[0.14em]">MENU</SheetTitle></SheetHeader>
+      <div className="mt-5" onClick={() => setOpen(false)}><BrandIdentity /></div>
       <nav className="mt-6 flex flex-col gap-2">
         {main.map(item => { const Icon = item.icon; return <Link key={item.label} to={item.to} onClick={() => setOpen(false)} className={row}><Icon className="h-4 w-4 text-primary" />{item.label}</Link>; })}
         <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2"><span className="text-sm font-medium text-foreground">Wallet</span><WalletButton /></div>
