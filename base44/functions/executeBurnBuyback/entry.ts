@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { secrets } from 'base44:runtime';
 import { Connection, Keypair } from 'npm:@solana/web3.js@1.98.4';
-import { OnlinePumpSdk } from 'npm:@pump-fun/pump-sdk@2.0.0';
+import runtimePumpSdk from '../../shared/pumpSdkRuntime.ts';
+const { OnlinePumpSdk } = runtimePumpSdk;
 import { parseWallet, assertMainnet, adminWalletSecretName } from '../../shared/mintWallet.ts';
 import { burnMint, solMint, gasReserve, minimumBuy, getBuybackState, buybackTotals } from '../../shared/burnBuybackConfig.ts';
 import { acquireBuybackLock, releaseBuybackLock, reconcileBuybackStatus } from '../../shared/burnBuybackLock.ts';

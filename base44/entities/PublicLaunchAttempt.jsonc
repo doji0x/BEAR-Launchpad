@@ -111,7 +111,9 @@
         "pending",
         "confirmed",
         "failed",
-        "expired"
+        "expired",
+        "draft",
+        "awaiting_first_buy"
       ],
       "default": "prepared"
     },
@@ -121,6 +123,169 @@
     "checkedAt": {
       "type": "string",
       "format": "date-time"
+    },
+    "nativePairPolicyVersion": {
+      "type": "number"
+    },
+    "treasuryPolicyVersion": {
+      "type": "number"
+    },
+    "treasuryShareBps": {
+      "type": "number"
+    },
+    "firstBuySlippageBps": {
+      "type": "number"
+    },
+    "quoteDecimals": {
+      "type": "number"
+    },
+    "preparedSlot": {
+      "type": "number"
+    },
+    "finalizedSlot": {
+      "type": "number"
+    },
+    "policyAccepted": {
+      "type": "boolean"
+    },
+    "policyVerified": {
+      "type": "boolean"
+    },
+    "automationEligible": {
+      "type": "boolean",
+      "description": "Always false in Phases 1-2. Later reward accounting must explicitly register and verify a launch."
+    },
+    "mayhemMode": {
+      "type": "boolean"
+    },
+    "cashback": {
+      "type": "boolean"
+    },
+    "graduated": {
+      "type": "boolean"
+    },
+    "treasuryAddress": {
+      "type": "string"
+    },
+    "quoteTokenProgram": {
+      "type": "string"
+    },
+    "quoteSymbol": {
+      "type": "string"
+    },
+    "quoteSource": {
+      "type": "string"
+    },
+    "quoteAmountAtomic": {
+      "type": "string"
+    },
+    "minimumTokens": {
+      "type": "string"
+    },
+    "preparedMessageBase64": {
+      "type": "string"
+    },
+    "protocolFeeRecipient": {
+      "type": "string"
+    },
+    "protocolBuybackFeeRecipient": {
+      "type": "string"
+    },
+    "sharingConfigAddress": {
+      "type": "string"
+    },
+    "feeLockStatus": {
+      "type": "string"
+    },
+    "policyError": {
+      "type": "string"
+    },
+    "rewardStatus": {
+      "type": "string"
+    },
+    "creationSignature": {
+      "type": "string"
+    },
+    "firstBuySignature": {
+      "type": "string"
+    },
+    "firstBuyStatus": {
+      "type": "string"
+    },
+    "lockToken": {
+      "type": "string"
+    },
+    "lockUntil": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "feeLockVerifiedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "launchStep": {
+      "type": "string",
+      "enum": [
+        "create_lock_buy",
+        "create_lock",
+        "first_buy"
+      ]
+    },
+    "lookupTableAddresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pumpQuoteAccounts": {
+      "type": "object",
+      "properties": {
+        "pool": {
+          "type": "object",
+          "properties": {
+            "pool": {
+              "type": "string"
+            },
+            "baseVault": {
+              "type": "string"
+            },
+            "quoteVault": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "pool",
+            "baseVault",
+            "quoteVault"
+          ]
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        },
+        "unitsConsumed": {
+          "type": "number"
+        },
+        "transactionBytes": {
+          "type": "number"
+        },
+        "splitFirstBuy": {
+          "type": "boolean"
+        },
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "required": [

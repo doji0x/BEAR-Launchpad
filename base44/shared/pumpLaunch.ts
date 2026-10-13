@@ -1,5 +1,6 @@
 import { Keypair } from 'npm:@solana/web3.js@1.98.4';
-import { PUMP_PROGRAM_ID } from 'npm:@pump-fun/pump-sdk@2.0.0';
+import runtimePumpSdk from './pumpSdkRuntime.ts';
+const { PUMP_PROGRAM_ID } = runtimePumpSdk;
 import { rpcRequest } from './mintWallet.ts';
 
 export const appBaseUrl = 'https://solvalidate.base44.app';

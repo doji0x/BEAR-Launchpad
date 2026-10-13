@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer';
-import * as sdk from 'npm:@pump-fun/pump-sdk@2.0.0';
-import * as amm from 'npm:@pump-fun/pump-swap-sdk@1.13.0';
+import sdk from './pumpSdkRuntime.ts';
+import amm from './pumpSwapRuntime.ts';
 import * as spl from 'npm:@solana/spl-token@0.4.15';
 import * as web3 from 'npm:@solana/web3.js@1.98.4';
 import { createClaimTools, CLAIM_SOURCE, claimAssert, claimReceipt } from './creatorClaimsCore.js';
