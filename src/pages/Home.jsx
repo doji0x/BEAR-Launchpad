@@ -20,7 +20,7 @@ export default function Home() {
         <span className="font-mono text-primary">BUY BACK. BURN SUPPLY.</span>
       </div>
       <nav aria-label="External links" className="flex items-center gap-4">
-        <a href="https://github.com/doji0x/Spunk" target="_blank" rel="noreferrer" className="hover:text-primary">Docs</a>
+        <a href="https://github.com/doji0x/BEAR-Launchpad" target="_blank" rel="noreferrer" className="hover:text-primary">Docs</a>
         <a href="https://x.com/humanevolvd?s=11" target="_blank" rel="noreferrer" className="hover:text-primary">X</a>
       </nav>
     </footer>

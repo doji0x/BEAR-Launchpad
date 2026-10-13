@@ -29,7 +29,7 @@ export default function MobileMenuSheet({ triggerClassName = 'flex h-full w-full
       <nav className="mt-6 flex flex-col gap-2">
         {main.map(item => { const Icon = item.icon; return <Link key={item.label} to={item.to} onClick={() => setOpen(false)} className={row}><Icon className="h-4 w-4 text-primary" />{item.label}</Link>; })}
         <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2"><span className="text-sm font-medium text-foreground">Wallet</span><WalletButton /></div>
-        <a href="https://github.com/doji0x/Spunk" target="_blank" rel="noreferrer" className={`mt-4 ${row}`}><Github className="h-4 w-4 text-primary" />GitHub</a>
+        <a href="https://github.com/doji0x/BEAR-Launchpad" target="_blank" rel="noreferrer" className={`mt-4 ${row}`}><Github className="h-4 w-4 text-primary" />GitHub</a>
       </nav>
     </SheetContent>
   </Sheet>;

@@ -1,46 +1,78 @@
-# Curated
+# BEAR-Launchpad
 
-**Curated** is a Solana application for creating coins, inscribing artwork, and verifying that supported images are present in on-chain data. It also offers wallet-based profiles and a social feed. The application distinguishes a coin’s *served metadata*—which may be updated where the launch supports it—from the image bytes and transaction history independently verifiable on Solana.
+**BEAR · The Black Bear** is a Solana launchpad focused on token buybacks and permanent supply burns. Coin launching is currently restricted to administrators in the app interface; wallet-based profiles, the social feed, and supported creator metadata editing remain available.
 
-## What the application does
+- **Repository:** [doji0x/BEAR-Launchpad](https://github.com/doji0x/BEAR-Launchpad)
+- **Published app:** [solvalidate.base44.app](https://solvalidate.base44.app)
+- **BEAR contract displayed in the app:** `49PU6ENTpYc3zkhgCruzCSBzgVAdix5muP2oVzRGpump`
 
-- **Launch a coin:** On `/launch-coin`, choose an uploaded image or an existing inscribed NFT, enter coin details, and set a required first buy. Both use the same pump.fun create-and-buy transaction approved through Phantom. Pair selection, creator fees, holder rewards, and optional custom fee sharing are available for either image source; custom splits require a separate approval after launch.
-- **Inscribe artwork:** Submit an image for a one-of-one NFT inscription, monitor progress, and review past inscriptions (`/inscribe`). Image bytes are written in resumable chunks and verified against the completed on-chain data.
-- **Choose an inscribed image:** Select “Use inscribed NFT” in the unified launch form to use a verified on-chain image through the inscription resolver. `/launch` redirects to `/launch-coin`.
-- **Edit supported coin metadata:** A confirmed coin launched through the supported public flow can have its served name, image, and links updated by the launching wallet’s signed request (`/edit-coin`). Eligibility and the scope of updates depend on the launch; this does not rewrite immutable on-chain records or guarantee that third-party caches refresh immediately.
-- **Verify an inscription:** Submit a mint address or transaction signature on the home page. Independent checks examine supported Metaplex, LibrePlex, versioned-transaction, and token-held inscription paths and return evidence or an explicit inconclusive result.
-- **Participate in the community:** Connect a wallet to create a profile and post to the feed (`/feed`).
+## Launch and reward model
 
-## Metadata and provenance
+The launchpad's intended model allocates **80% of each launched coin's creator rewards to buying back that coin's own token**, then permanently burns the purchased tokens. The remaining 20% is retained in the treasury. This is a reward allocation, **not an 80% burn of the initial token supply** and not a trading tax. The launch UI describes native-token pairing through pump.fun; actual pair support depends on the selected asset and protocol configuration.
 
-A metadata URI tells clients where to retrieve a coin’s displayed information. Keeping control of the metadata served at that address can help creators correct errors and keep links and artwork presentation current, subject to authority and platform constraints. A served metadata update must not be confused with changing the original inscription: verification reads supported image bytes from Solana data rather than accepting a metadata image URL as proof.
+Buybacks and burns do not guarantee price appreciation, liquidity, or a coin's survival.
 
-A successful verification establishes that qualifying bytes and the reported linkage were observed at lookup time. It does **not** establish authorship, legal ownership, token safety, or future availability of an external metadata service.
+### Current implementation and deployment boundaries
+
+The frontend branding, displayed contract, per-coin reward messaging, and admin-only launch route have been updated. These UI changes do not implement a new on-chain reward policy.
+
+- The existing reward worker is **single-mint**, not an automatic service for every newly launched coin. Per-coin automation requires isolated mint-specific reward sources, accounting, cycles, and authorization before activation.
+- The existing backend buyback configuration still targets `6ZdCWrLhmBJmoLCL8reNCBxqJGBxXgQyM2PcDo4kpump`, not the newly displayed BEAR contract. Align and verify backend configuration before treating rewards as belonging to the new contract.
+- `/launch-coin` requires a signed-in admin in the frontend. `/launch` and `/atomic-v1` redirect through that guarded route. Frontend gating does **not** establish admin enforcement for every launch API; backend enforcement must be reviewed separately.
+- Automation is explicitly enabled or paused through the admin dashboard. A scheduled check does not guarantee transaction completion within that interval.
+
+## App features
+
+- **Admin coin launch:** Upload artwork, enter coin details, choose the first buy and supported pair/reward options, then approve through Phantom on `/launch-coin`. Public launch buttons are hidden from non-admin users.
+- **Admin V1 console:** `/admin/v1-launch` provides the separate server-signed V1 launch flow, subject to transaction-size, RPC, and network support.
+- **Reward operations:** `/admin/buybacks` exposes claim status, reward-funded cycles, receipts, pause/resume controls, and recovery for the configured mint. Manual escrow claims stay in the treasury and do not automatically fund the reward cycle.
+- **Creator metadata editing:** `/edit-coin` supports authorized updates for eligible launches using the launching wallet's signed request. Served metadata changes do not rewrite immutable chain history or force external caches to refresh.
+- **Community:** Wallet-based profiles and a social feed are available at `/profile/:wallet` and `/feed`.
+
+Legacy inscription and verification tools remain in the repository, but they are not the launchpad's primary positioning. The current launch form uses uploaded artwork rather than an inscription source.
+
+## Reward accounting and safety
+
+The existing reward cycle budgets purchases from eligible, finalized, mint-specific reward receipts, never from the wallet's total SOL balance. Deposits, historical wallet funds, pooled creator rewards, and reclaimed rent must not increase the purchase budget. Network fees and account rent use a separately funded operating reserve.
+
+Claim, purchase, burn, and optional empty-account cleanup are separate transactions. Pending receipts are reconciled before new transactions are prepared; uncertain submissions must not trigger duplicate purchases. Keep persisted receipts and cycle state intact when resuming interrupted work.
+
+Detailed operational documentation:
+
+- [Creator reward claims](docs/creator-reward-claims.md)
+- [Reward-funded cycle and recovery](docs/reward-funded-cycle.md)
+- [Native V1 signing](docs/atomic-v1-native-signing.md)
+
+Some operational documents retain historical Burn naming and mint addresses; verify them against current configuration before any mainnet action.
 
 ## Architecture
 
 | Layer | Implementation |
 | --- | --- |
-| Client | React, Vite, React Router, Tailwind CSS |
+| Frontend | React, Vite, React Router, Tailwind CSS |
 | Data and authentication | Base44 entities and authentication |
-| Server | Base44 backend functions and scheduled workflows |
-| Blockchain | Solana mainnet RPC; Metaplex and LibrePlex inscription verification |
-| Wallet | Phantom connection and signed creator actions |
+| Server | Base44 backend functions and workflows |
+| Blockchain | Solana mainnet, pump.fun and PumpSwap SDKs |
+| Wallet | Phantom for user-approved actions; configured admin signer for server-signed operations |
 
-The frontend lives in `src/`, backend functions in `base44/functions/`, shared server logic in `base44/shared/`, and scheduled work in `base44/workflows/`. The main route definitions are in `src/App.jsx`.
+Frontend code lives in `src/`, backend functions in `base44/functions/`, shared server logic in `base44/shared/`, and workflows in `base44/workflows/`. Routes are defined in `src/App.jsx`.
+
+Historical backend names such as `BurnRewardCycle`, `BurnBuybackState`, and `runBurnRewardCycle` remain intentionally unchanged. Renaming the repository does not migrate stored data or change on-chain authorities.
 
 ## Development
 
-This repository requires Node.js and npm. Install dependencies and start the frontend:
+Install dependencies and start the frontend with Node.js and npm:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Use a Base44 environment linked to this application for features that call backend functions, authenticate users, or read and write records. Configure third-party credentials in the application’s secret settings; never commit wallet keys, RPC credentials, or API keys to the repository. Solana transaction features require a correctly configured mainnet RPC and funded signing wallets where applicable.
+Use a Base44 environment linked to this application for authentication, stored records, backend functions, and workflows. Configure credentials securely in app secrets; never commit wallet private keys, RPC credentials, GitHub tokens, or AI API keys.
 
-Available project checks:
+Existing secrets include `SOLANA_RPC_URL`, `ADMIN_MINT_WALLET_SECRET_KEY`, and `MINT_WALLET_SECRET_KEY`, plus credentials for optional Astra and legacy inscription tools. Mainnet operations require correctly configured RPC access, authorized signers, and sufficient operating funds.
+
+Available checks:
 
 ```bash
 npm run lint
@@ -48,23 +80,18 @@ npm run typecheck
 npm run build
 ```
 
+For the existing mocked claim/cycle regression suite, see the Node version and instructions in [reward-funded-cycle.md](docs/reward-funded-cycle.md). Local checks do not establish that live mainnet execution or hosted workflow authorization succeeds.
+
 ## Operational notes
 
-- Inscription writes can take multiple transactions; the background worker stores progress to support resumption.
-- Saved coin launches retain their mint keys in the originating browser. Check or resume unconfirmed launches from either image source; an uncertain submission is checked before another approval is requested. Older create-only drafts require an explicit first buy and fresh wallet approval before a new create-and-buy attempt.
-- A `valid` verifier result describes the observed on-chain state; `unknown` means the evidence was inconclusive, not that an inscription is absent.
-- Metadata services and third-party platforms may cache results, so displayed changes may lag behind an update.
-- A long-lived metadata URI depends on its hosting domain and endpoint remaining available. Plan domain ownership and continuity before using one as permanent launch infrastructure.
-- Administrative minting, launch management, and other privileged tools are separate from the public wallet flows.
+- Keep the repository name, source links, and any external integrations aligned with `BEAR-Launchpad` after renaming.
+- Confirm backend mint configuration and server-side launch authorization before enabling the new launch/reward policy.
+- Preserve pending transaction evidence and reconcile uncertain submissions before retrying.
+- Metadata endpoints and domains must remain available; external platforms may cache old artwork and metadata.
+- No mainnet transaction, reward activation, backend policy migration, or financial guarantee is implied by this documentation update.
 
 ## References
 
 - [Solana documentation](https://solana.com/docs)
-- [Metaplex inscriptions](https://developers.metaplex.com/inscription)
+- [Pump SDK](https://www.npmjs.com/package/@pump-fun/pump-sdk)
 - [Base44 documentation](https://docs.base44.com)
-## Creator reward claims
-
-The admin claim action collects SOL creator rewards into the verified treasury.
-Purchases are paused during this claim-only phase; the hourly worker reconciles
-existing receipts without initiating buys. See [claim behavior, configuration,
-and validation](docs/creator-reward-claims.md).
