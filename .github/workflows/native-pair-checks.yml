@@ -1,7 +1,8 @@
 name: Native pair checks
 on:
   push:
-    branches: ['feat/native-pair-phases-1-2']
+    branches: ['feat/native-pair-phases-1-2', main]
+    paths: ['src/**', 'base44/**', 'tests/**', 'package*.json', '.github/workflows/native-pair-checks.yml']
   pull_request:
     paths: ['src/**', 'base44/**', 'tests/**', 'package*.json', '.github/workflows/native-pair-checks.yml']
   workflow_dispatch:
@@ -16,38 +17,57 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - name: Install official native-pair SDKs without lifecycle scripts
-        run: npm install --save-exact --ignore-scripts --no-audit --no-fund @pump-fun/pump-sdk@4.0.0 @pump-fun/pump-swap-sdk@2.1.0
-      - name: SDK interface evidence
-        run: |
-          node <<'JS'
-          const sdk = require('@pump-fun/pump-sdk');
-          for (const name of ['createV2Instruction','createV2AndBuyV2Instructions','getBuyV2InstructionRaw','createFeeSharingConfig','updateFeeSharesV2']) console.log(name, String(sdk.PUMP_SDK[name]));
-          console.log('getBuyTokenAmountFromSolAmount', String(sdk.getBuyTokenAmountFromSolAmount));
-          console.log('resolveQuoteMint', String(sdk.OnlinePumpSdk.prototype.resolveQuoteMint));
-          JS
-      - name: Treasury tests
-        if: always()
+          node-version: '24'
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Install exactly the committed dependency graph
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Pinned official SDK dependency evidence
+        run: npm ls @pump-fun/pump-sdk @pump-fun/pump-swap-sdk @solana/spl-token @solana/web3.js
+      - name: Real SDK quote, treasury and transaction-size tests
         run: node --test tests/treasury/*.test.mjs
-      - name: Build
-        if: always()
-        run: npm run build
+      - name: Public launch, recovery, policy and setup tests
+        run: node --import ./tests/native/register.mjs --test tests/native/*.test.mjs
+      - name: Historical creator claims and reward ledger regressions
+        run: node --import ./tests/claims/register.mjs --test tests/claims/*.test.mjs
+      - name: Historical atomic signing and submit-button regressions
+        run: |
+          node --test tests/atomic-v1/*.test.mjs
+          node --test tests/atomic-v1-ui/*.test.cjs
+      - name: Production Deno runtime adapters and builders
+        run: deno test --node-modules-dir=manual --no-check --allow-read --allow-env --allow-sys tests/native/deno.test.ts
+      - name: Independent Deno npm installation
+        run: |
+          mkdir -p "$RUNNER_TEMP/bear-deno"
+          cp -R base44 tests "$RUNNER_TEMP/bear-deno/"
+          cp tests/native/deno-package.json "$RUNNER_TEMP/bear-deno/package.json"
+          cd "$RUNNER_TEMP/bear-deno"
+          deno install --node-modules-dir=auto
+          deno test --node-modules-dir=auto --no-check --allow-read --allow-env --allow-sys tests/native/deno.test.ts
       - name: Lint
-        if: always()
         run: npm run lint
-      - name: Retain tracked source and public dependency packages
+      - name: Production build
+        run: npm run build
+      - name: Retain application-wide typecheck diagnostics separately
         if: always()
         run: |
           mkdir -p native-pair-evidence
-          git archive HEAD > native-pair-evidence/source.tar
+          if npm run typecheck > native-pair-evidence/typecheck.txt 2>&1; then
+            echo 'Application typecheck passed.'
+          else
+            echo '::warning::Application-wide typecheck failed. Review retained diagnostics and the existing base/head typecheck workflow; native-pair tests do not waive this failure.'
+          fi
           cp package.json package-lock.json native-pair-evidence/
-          if [ -d node_modules ]; then tar -czf native-pair-evidence/node-modules.tar.gz node_modules; fi
+          git diff --exit-code -- package.json package-lock.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: native-pair-test-evidence
+          name: native-pair-validation
           path: native-pair-evidence
-          retention-days: 1
+          retention-days: 3
