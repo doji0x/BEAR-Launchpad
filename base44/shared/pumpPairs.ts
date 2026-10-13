@@ -1,3 +1,4 @@
+import { BEAR_QUOTE_MINT, assertBearQuoteMint, assertPumpCoinQuoteResolution } from './nativePairPolicy.js';
 import { PublicKey } from 'npm:@solana/web3.js@1.98.4';
 import { rpcRequest } from './mintWallet.ts';
 
@@ -7,9 +8,9 @@ export async function tokenBalance(rpcUrl, owner, mint) {
 }
 
 export async function resolveSupportedPair(onlineSdk, mint) {
-  const pair = (await supportedPairOptions(onlineSdk)).find(item => item.mint === mint);
-  if (!pair) throw new Error('That pair asset is not currently enabled by pump.fun.');
-  return { pair, quote: await onlineSdk.resolveQuoteMint(new PublicKey(mint)) };
+  assertBearQuoteMint(mint);
+  const quote = assertPumpCoinQuoteResolution(await onlineSdk.resolveQuoteMint(new PublicKey(mint)));
+  return { pair: { mint, symbol: 'BEAR', name: 'BEAR', source: 'pumpCoin' }, quote };
 }
 
 const labels = new Map([
@@ -47,9 +48,14 @@ const labels = new Map([
 
 export async function supportedPairOptions(onlineSdk) {
   const supported = await onlineSdk.fetchSupportedQuoteMints();
+  // Do not advertise a quote until the Pump SDK confirms BEAR is eligible.
+  const bear = await onlineSdk.resolveQuoteMint(new PublicKey(BEAR_QUOTE_MINT));
+  assertPumpCoinQuoteResolution(bear);
+  return [{ mint: BEAR_QUOTE_MINT, symbol: 'BEAR', name: 'BEAR', source: 'pumpCoin', termsUrl: 'https://pump.fun/docs/custom-pairs' }];
+  /* const supported = await onlineSdk.fetchSupportedQuoteMints();
   return supported.map(item => {
     const mint = item.mint.toBase58();
     const known = labels.get(mint);
     return { mint, symbol: known?.[0] || mint.slice(0, 6), name: known?.[1] || `Supported asset ${mint.slice(0, 8)}…`, source: item.source, termsUrl: 'https://pump.fun/docs/custom-pairs' };
-  });
+  }); */
 }
