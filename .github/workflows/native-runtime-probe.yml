@@ -1,0 +1,42 @@
+name: Native Deno runtime probe
+on:
+  push:
+    branches: ['feat/native-pair-phases-1-2']
+    paths: ['.github/workflows/native-runtime-probe.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm install --ignore-scripts --no-audit --no-fund --save-exact @pump-fun/pump-sdk@4.0.0 @pump-fun/pump-swap-sdk@2.1.0
+      - name: Probe exact npm require and file resolution
+        run: |
+          deno eval --node-modules-dir=manual '
+          import { createRequire } from "node:module";
+          const require=createRequire(import.meta.url);
+          for(const name of ["npm:@pump-fun/pump-sdk@4.0.0","@pump-fun/pump-sdk"]){
+            try { const sdk=require(name); console.log("REQUIRE_OK",name,!!sdk.PUMP_SDK); } catch(e){console.log("REQUIRE_ERROR",name,e.message);}
+          }
+          try { const url=import.meta.resolve("npm:@pump-fun/pump-sdk@4.0.0"); console.log("RESOLVE",url); const sdk=createRequire(url)("@pump-fun/pump-sdk"); console.log("RESOLVED_REQUIRE",!!sdk.PUMP_SDK); } catch(e){console.log("RESOLVED_ERROR",e.message);}
+          '
+      - name: Retain public Deno executable for offline debugging
+        if: always()
+        run: |
+          mkdir -p /tmp/deno-runtime
+          cp "$(command -v deno)" /tmp/deno-runtime/deno
+          gzip /tmp/deno-runtime/deno
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-deno-runtime
+          path: /tmp/deno-runtime
+          retention-days: 1
