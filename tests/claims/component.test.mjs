@@ -28,6 +28,7 @@ registerHooks({
     return nextLoad(url, context);
   },
 });
+globalThis.ResizeObserver = class { observe() {} disconnect() {} };
 globalThis.window = { self: null, top: null };
 const { default: AdminBuybacks } = await import('../../src/pages/AdminBuybacks.jsx');
 const flush = async () => { for (let i = 0; i < 4; i++) await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); }); };
@@ -62,7 +63,7 @@ async function mount(t, { initial = null, automation = null } = {}) {
     } },
   };
   let view;
-  await act(async () => { view = create(React.createElement(QueryClientProvider, { client }, React.createElement(MemoryRouter, null, React.createElement(AdminBuybacks)))); });
+  await act(async () => { view = create(React.createElement(QueryClientProvider, { client }, React.createElement(MemoryRouter, null, React.createElement(AdminBuybacks))), { createNodeMock: () => ({ className: '', addEventListener() {}, removeEventListener() {}, getBoundingClientRect: () => ({ width: 100, height: 100 }) }) }); });
   t.after(async () => { await act(async () => view.unmount()); client.clear(); });
   await flush();
   return { view, state, client };

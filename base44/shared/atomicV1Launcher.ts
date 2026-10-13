@@ -1,7 +1,8 @@
 import { secrets } from 'base44:runtime';
 import { Buffer } from 'node:buffer';
 import { Connection, Keypair, PublicKey } from 'npm:@solana/web3.js@1.98.4';
-import { OnlinePumpSdk, PUMP_SDK, bondingCurvePda, getBuyTokenAmountFromSolAmount } from 'npm:@pump-fun/pump-sdk@2.0.0';
+import runtimePumpSdk from './pumpSdkRuntime.ts';
+const { OnlinePumpSdk, PUMP_SDK, bondingCurvePda, getBuyTokenAmountFromSolAmount } = runtimePumpSdk;
 import { parseWallet, rpcRequest, adminWalletSecretName } from './mintWallet.ts';
 import { launchMint, isLaunched } from './pumpLaunch.ts';
 import { atomicAmount } from './pumpBuy.ts';

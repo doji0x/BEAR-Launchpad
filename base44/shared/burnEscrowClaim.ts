@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from 'npm:@solana/web3.js@1.98.4';
-import { PUMP_SDK, PUMP_PROGRAM_ID, PUMP_FEE_PROGRAM_ID, feeSharingConfigPda, creatorVaultPda, bondingCurvePda } from 'npm:@pump-fun/pump-sdk@2.0.0';
+import runtimePumpSdk from './pumpSdkRuntime.ts';
+const { PUMP_SDK, PUMP_PROGRAM_ID, PUMP_FEE_PROGRAM_ID, feeSharingConfigPda, creatorVaultPda, bondingCurvePda } = runtimePumpSdk;
 import { CLAIM_MINT, assertClaimWallet, claimAssert } from './creatorClaimsCore.js';
 import { solMint } from './burnBuybackConfig.ts';
 

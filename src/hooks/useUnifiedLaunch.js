@@ -1,3 +1,4 @@
+import { NATIVE_PAIR_POLICY_VERSION } from '../../base44/shared/nativePairPolicy.js';
 import { useEffect, useRef, useState } from 'react';
 import { usePhantomWallet } from '@/contexts/PhantomWalletContext';
 import { hasLaunchMintKey } from '@/lib/launchMintKey';
@@ -9,7 +10,7 @@ export default function useUnifiedLaunch() {
   const wallet = usePhantomWallet(), lock = useRef(false), alive = useRef(true), addressRef = useRef(wallet.address);
   addressRef.current = wallet.address;
   const [input, setInput] = useState(initialLaunchInput), [file, setFile] = useState(null), [attempts, setAttempts] = useState([]);
-  const [settings, setSettings] = useState({ pairs: [] }), [optionsLoading, setOptionsLoading] = useState(true), [historyLoading, setHistoryLoading] = useState(false);
+  const [settings, setSettings] = useState({ pairs: [], launchReady: false, launchDisabledReason: '' }), [optionsLoading, setOptionsLoading] = useState(true), [historyLoading, setHistoryLoading] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [stage, setStage] = useState(''), [preflight, setPreflight] = useState(null), [result, setResult] = useState(null), [recovery, setRecovery] = useState(null);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const persist = row => {
@@ -25,7 +26,7 @@ export default function useUnifiedLaunch() {
     invokeLaunch({ action: 'options' }).then(data => {
       if (!active) return;
       setSettings(data);
-      setInput(current => ({ ...current, quoteMint: data.pairs?.some(pair => pair.mint === current.quoteMint) ? current.quoteMint : data.pairs?.[0]?.mint || '' }));
+      setInput(current => ({ ...current, quoteDecimals: data.pairs?.[0]?.decimals }));
     }).catch(reason => active && setError(reason.response?.data?.error || reason.message)).finally(() => active && setOptionsLoading(false));
     return () => { active = false; };
   }, []);
@@ -70,12 +71,14 @@ export default function useUnifiedLaunch() {
     const checked = await checkLaunch(saved, persist);
     if (checked.status === 'confirmed') { if (checked.feeRecipients?.length && checked.rewardStatus !== 'confirmed') await configureLaunchRewards(checked, wallet, persist, setStage); return; }
     if (checked.status === 'pending') throw new Error('This transaction may still land. Keep this launch and check again before requesting another approval.');
+    if (checked.nativePairPolicyVersion !== NATIVE_PAIR_POLICY_VERSION) throw new Error('This legacy launch is read-only. Keep its history; start a fresh BEAR launch only after its old approval has expired.');
     if (!hasLaunchMintKey(checked.requestId)) throw new Error('Resume in the original browser where the mint key was saved.');
     if (!Number(checked.firstBuyAmount)) { setRecovery(checked); setInput({ ...initialLaunchInput, ...launchParams(checked), firstBuyAmount: '' }); setFile(null); setPreflight(null); return; }
     await run(checked);
   });
   const launch = event => { event.preventDefault(); return guarded(async () => {
     if (!wallet.address) { await wallet.connect(); return; }
+    if (settings.launchReady !== true) throw new Error(settings.launchDisabledReason || 'BEAR launch settings are not ready.');
     let saved;
     if (recovery) {
       const checked = await checkLaunch(recovery, persist);
