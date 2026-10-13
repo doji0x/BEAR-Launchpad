@@ -1,10 +1,11 @@
+import { BEAR_QUOTE_MINT } from './nativePairPolicy.js';
 import BN from 'npm:bn.js@5.2.2';
 import { Connection } from 'npm:@solana/web3.js@1.98.4';
-import { OnlinePumpSdk, PUMP_SDK, getBuyTokenAmountFromSolAmount } from 'npm:@pump-fun/pump-sdk@2.0.0';
+import { OnlinePumpSdk, PUMP_SDK, getBuyTokenAmountFromSolAmount } from 'npm:@pump-fun/pump-sdk@4.0.0';
 import { resolveSupportedPair, supportedPairOptions } from './pumpPairs.ts';
 import { atomicAmount } from './pumpBuy.ts';
 
-export const defaultV1Quote = 'So11111111111111111111111111111111111111112';
+export const defaultV1Quote = BEAR_QUOTE_MINT;
 export async function atomicV1RewardOptions(rpcUrl) {
   const online = new OnlinePumpSdk(new Connection(rpcUrl, 'confirmed'));
   const [global, pairs] = await Promise.all([online.fetchGlobal(), supportedPairOptions(online)]);
@@ -17,7 +18,7 @@ export async function atomicV1PumpInstructions({ rpcUrl, mintKey, input, metadat
   if (!Number.isInteger(bps) || bps < 0 || bps > Number(global.maxConfigurableCreatorFeeBps.toString()) || (bps > 0 && !global.creatorFeeConfigurable)) throw new Error('Creator fee is outside Pump’s current allowed range.');
   if (input.holderReward && !global.isHolderRewardEnabled) throw new Error('Pump currently has holder rewards disabled.');
   const creatorFeeBps = bps ? new BN(bps) : undefined;
-  const shared = { global, mint: mintKey, name: input.name, symbol: input.symbol, uri: metadataUri, creator, user: payer, mayhemMode: false, holderReward: Boolean(input.holderReward), creatorFeeBps, quoteMint: quote.mint, quoteTokenProgram: quote.quoteTokenProgram };
+  const shared = { global, mint: mintKey, name: input.name, symbol: input.symbol, uri: metadataUri, creator, user: payer, mayhemMode: false, holderReward: Boolean(input.holderReward), creatorFeeBps, quoteMint: quote.mint, quoteTokenProgram: quote.quoteTokenProgram, pumpQuote: quote.pumpQuote?.accounts };
   if (!input.firstBuyAmount) return [await PUMP_SDK.createV2Instruction(shared)];
   const quoteAmount = atomicAmount(input.firstBuyAmount, quote.decimals);
   const [feeConfig, quoteControl] = await Promise.all([online.fetchFeeConfig(), online.fetchQuoteControl()]);
