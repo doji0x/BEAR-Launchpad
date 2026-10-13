@@ -23,16 +23,14 @@ jobs:
         run: npm install --save-exact --ignore-scripts --no-audit --no-fund @pump-fun/pump-sdk@4.0.0 @pump-fun/pump-swap-sdk@2.1.0
       - name: SDK interface evidence
         run: |
-          node --input-type=module <<'JS'
-          import fs from 'node:fs';
-          import * as sdk from '@pump-fun/pump-sdk';
+          node <<'JS'
+          const sdk = require('@pump-fun/pump-sdk');
           for (const name of ['createV2Instruction','createV2AndBuyV2Instructions','getBuyV2InstructionRaw','createFeeSharingConfig','updateFeeSharesV2']) console.log(name, String(sdk.PUMP_SDK[name]));
           console.log('getBuyTokenAmountFromSolAmount', String(sdk.getBuyTokenAmountFromSolAmount));
           console.log('resolveQuoteMint', String(sdk.OnlinePumpSdk.prototype.resolveQuoteMint));
-          console.log('source paths', fs.readdirSync('base44/shared').join('\n'));
-          console.log('launch UI paths', fs.readdirSync('src/components/launch').join('\n'));
           JS
       - name: Treasury tests
+        if: always()
         run: node --test tests/treasury/*.test.mjs
       - name: Build
         if: always()
@@ -40,3 +38,16 @@ jobs:
       - name: Lint
         if: always()
         run: npm run lint
+      - name: Retain tracked source and public dependency packages
+        if: always()
+        run: |
+          mkdir -p native-pair-evidence
+          git archive HEAD > native-pair-evidence/source.tar
+          cp package.json package-lock.json native-pair-evidence/
+          if [ -d node_modules ]; then tar -czf native-pair-evidence/node-modules.tar.gz node_modules; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-pair-test-evidence
+          path: native-pair-evidence
+          retention-days: 1
