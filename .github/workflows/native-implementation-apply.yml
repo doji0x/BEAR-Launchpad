@@ -26,7 +26,7 @@ jobs:
       - name: Reconstruct hash-verified source changes against the reviewed baseline
         run: |
           python3 <<'PY'
-          import hashlib, json, pathlib, subprocess
+          import gzip, hashlib, json, pathlib, subprocess
           baseline = '92c8118cb91663773dc49ab2cdac1552b575b828'
           paths = subprocess.check_output(['git','ls-tree','-r','--name-only',baseline,'--','base44','src','tests','docs','package.json','package-lock.json']).decode().splitlines()
           dictionary = b''.join(subprocess.check_output(['git','show',baseline+':'+p]) for p in sorted(paths))
@@ -53,6 +53,16 @@ jobs:
               assert hashlib.sha256(value).hexdigest() == row['after'], 'Replacement mismatch: '+name
               path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(value); seen.add(name)
           assert offset == len(data) and len(seen) == 59
+          correction = gzip.decompress(pathlib.Path('.github/native-payload/runtime-fix.patch.gz').read_bytes())
+          assert hashlib.sha256(correction).hexdigest() == 'e484261281810c5f98ee27d55cab52d107b8721d0fc9b069b661bb19d1495fb6'
+          for line in correction.decode().splitlines():
+              if line.startswith('+++ b/'):
+                  name = line[6:].split('\t')[0]
+                  assert name.startswith(('base44/','tests/','docs/')) and '..' not in pathlib.Path(name).parts
+                  seen.add(name)
+          pathlib.Path('/tmp/native-runtime.patch').write_bytes(correction)
+          subprocess.run(['git','apply','--check','/tmp/native-runtime.patch'],check=True)
+          subprocess.run(['git','apply','/tmp/native-runtime.patch'],check=True)
           pathlib.Path('/tmp/native-manifest.json').write_text(json.dumps(sorted(seen)))
           print('Applied and verified',len(seen),'source files; no main branch or deployed service changed.')
           PY
@@ -72,6 +82,14 @@ jobs:
           node --test tests/atomic-v1-ui/*.test.cjs
       - name: Production Deno imports and offline builders
         run: deno test --node-modules-dir=manual --no-check --allow-read --allow-env --allow-sys tests/native/deno.test.ts
+      - name: Isolated Deno npm dependency installation
+        run: |
+          mkdir -p "$RUNNER_TEMP/bear-deno"
+          cp -R base44 tests "$RUNNER_TEMP/bear-deno/"
+          cp tests/native/deno-package.json "$RUNNER_TEMP/bear-deno/package.json"
+          cd "$RUNNER_TEMP/bear-deno"
+          deno install --node-modules-dir=auto
+          deno test --node-modules-dir=auto --no-check --allow-read --allow-env --allow-sys tests/native/deno.test.ts
       - name: Lint and production bundle
         run: |
           npm run lint
