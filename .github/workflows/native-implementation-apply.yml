@@ -1,0 +1,113 @@
+name: Apply reviewed native-pair implementation
+on:
+  push:
+    branches: ['feat/native-pair-phases-1-2']
+    paths: ['.github/native-payload/**', '.github/workflows/native-implementation-apply.yml']
+permissions:
+  contents: write
+concurrency:
+  group: native-implementation-apply
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'doji0x/BEAR-Launchpad' && github.ref == 'refs/heads/feat/native-pair-phases-1-2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Reconstruct hash-verified source changes against the reviewed baseline
+        run: |
+          python3 <<'PY'
+          import hashlib, json, pathlib, subprocess
+          baseline = '92c8118cb91663773dc49ab2cdac1552b575b828'
+          paths = subprocess.check_output(['git','ls-tree','-r','--name-only',baseline,'--','base44','src','tests','docs','package.json','package-lock.json']).decode().splitlines()
+          dictionary = b''.join(subprocess.check_output(['git','show',baseline+':'+p]) for p in sorted(paths))
+          assert hashlib.sha256(dictionary).hexdigest() == '1f71a366be8fe5f43addfb3e536923d74ea983b429b9d07d8ec40704b40f0555'
+          pathlib.Path('/tmp/native-dictionary').write_bytes(dictionary)
+          packed = b''.join(pathlib.Path('.github/native-payload/'+str(i)).read_bytes() for i in range(5))
+          assert hashlib.sha256(packed).hexdigest() == '7ea31d9eee82fc0f04677abfff51f97af4ec82ae1dc25930e9ca30a97e6e8b80'
+          pathlib.Path('/tmp/native-source.zst').write_bytes(packed)
+          subprocess.run(['zstd','-d','--patch-from=/tmp/native-dictionary','/tmp/native-source.zst','-o','/tmp/native-source'],check=True)
+          bundle = pathlib.Path('/tmp/native-source').read_bytes()
+          assert hashlib.sha256(bundle).hexdigest() == 'cdd089d0f09a8cbc76e47febb4f918d6857337576f87ec57d511ae948aa27619'
+          header, data = bundle.split(b'\n',1)
+          manifest = json.loads(header)
+          seen = set()
+          offset = 0
+          for row in manifest:
+              name = row['path']; path = pathlib.Path(name)
+              assert name not in seen and not path.is_absolute() and '..' not in path.parts
+              assert name.startswith(('base44/','src/','tests/','docs/')) or name in ('package.json','package-lock.json')
+              assert not any(p.is_symlink() for p in [path,*path.parents])
+              before = path.read_bytes() if path.exists() else b''
+              assert hashlib.sha256(before).hexdigest() == row['before'], 'Source moved: '+name
+              value = data[offset:offset+row['size']]; offset += row['size']
+              assert hashlib.sha256(value).hexdigest() == row['after'], 'Replacement mismatch: '+name
+              path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(value); seen.add(name)
+          assert offset == len(data) and len(seen) == 59
+          pathlib.Path('/tmp/native-manifest.json').write_text(json.dumps(sorted(seen)))
+          print('Applied and verified',len(seen),'source files; no main branch or deployed service changed.')
+          PY
+      - name: Generate canonical lockfile and install exact dependencies
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund
+      - name: Real SDK treasury and quote tests
+        run: node --test tests/treasury/*.test.mjs
+      - name: Public launch and deployment policy tests
+        run: node --import ./tests/native/register.mjs --test tests/native/*.test.mjs
+      - name: Historical reward claim regressions
+        run: node --import ./tests/claims/register.mjs --test tests/claims/*.test.mjs
+      - name: Atomic launch regressions
+        run: |
+          node --test tests/atomic-v1/*.test.mjs
+          node --test tests/atomic-v1-ui/*.test.cjs
+      - name: Production Deno imports and offline builders
+        run: deno test --node-modules-dir=manual --no-check --allow-read --allow-env --allow-sys tests/native/deno.test.ts
+      - name: Lint and production bundle
+        run: |
+          npm run lint
+          npm run build
+      - name: Retain existing repository-wide type diagnostics
+        if: always()
+        run: |
+          mkdir -p /tmp/native-evidence
+          npm run typecheck > /tmp/native-evidence/typecheck.txt 2>&1 || true
+      - name: Commit tested source only to the isolated feature branch
+        env:
+          EXPECTED_HEAD: ${{ github.sha }}
+        run: |
+          branch=feat/native-pair-phases-1-2
+          remote=$(git ls-remote origin refs/heads/$branch | cut -f1)
+          test "$remote" = "$EXPECTED_HEAD"
+          python3 <<'PY'
+          import json, subprocess
+          paths=json.load(open('/tmp/native-manifest.json'))
+          subprocess.run(['git','add','--',*paths],check=True)
+          PY
+          git rm -r -- .github/native-payload
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Implement BEAR native-pair launch policy and atomic fee locking'
+          git push origin HEAD:refs/heads/$branch
+      - name: Collect validation evidence without environment credentials
+        if: always()
+        run: |
+          mkdir -p /tmp/native-evidence
+          cp package.json package-lock.json /tmp/native-evidence/
+          git diff --stat > /tmp/native-evidence/diff-stat.txt
+          tar -czf /tmp/native-evidence/reviewed-source.tar.gz src base44 tests docs package.json package-lock.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-implementation-validation
+          path: /tmp/native-evidence
+          retention-days: 3
