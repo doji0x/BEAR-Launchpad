@@ -47,15 +47,9 @@ const labels = new Map([
 ]);
 
 export async function supportedPairOptions(onlineSdk) {
-  const supported = await onlineSdk.fetchSupportedQuoteMints();
   // Do not advertise a quote until the Pump SDK confirms BEAR is eligible.
   const bear = await onlineSdk.resolveQuoteMint(new PublicKey(BEAR_QUOTE_MINT));
   assertPumpCoinQuoteResolution(bear);
   return [{ mint: BEAR_QUOTE_MINT, symbol: 'BEAR', name: 'BEAR', source: 'pumpCoin', termsUrl: 'https://pump.fun/docs/custom-pairs' }];
-  /* const supported = await onlineSdk.fetchSupportedQuoteMints();
-  return supported.map(item => {
-    const mint = item.mint.toBase58();
-    const known = labels.get(mint);
-    return { mint, symbol: known?.[0] || mint.slice(0, 6), name: known?.[1] || `Supported asset ${mint.slice(0, 8)}…`, source: item.source, termsUrl: 'https://pump.fun/docs/custom-pairs' };
-  }); */
+
 }
