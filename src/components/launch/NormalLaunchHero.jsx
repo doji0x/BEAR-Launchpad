@@ -4,9 +4,9 @@ import { ArrowUpRight, Rocket } from 'lucide-react';
 
 export default function NormalLaunchHero({ showLaunchLink = false }) {
   return <section className="rounded-3xl border border-primary/25 bg-card/60 p-6 sm:p-8">
-    <span className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-primary"><Rocket size={14} />PUMP.FUN / SOLANA MAINNET</span>
-    <h2 className="mt-5 font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">Your idea. <span className="gold-text">Your coin.</span></h2>
-    <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">Upload an image or use an inscribed NFT, add your coin details, and choose your first buy. Approve coin creation and the buy together in Phantom.</p>
+    <span className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-primary"><Rocket size={14} />LAUNCH · BUY BACK · BURN</span>
+    <h2 className="mt-5 font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">Give your coin <span className="gold-text">a fighting chance.</span></h2>
+    <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">BEAR — The Black Bear is a launchpad built around buying back tokens and burning supply. Because a coin’s future should matter as much as its launch.</p>
     <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground"><span>01 · Add details</span><span>02 · Approve in Phantom</span><span>03 · Coin created</span></div>
     {showLaunchLink && <Link to="/launch-coin" className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90">Create a coin <ArrowUpRight size={16} /></Link>}
   </section>;
