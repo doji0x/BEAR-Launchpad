@@ -45,17 +45,15 @@ export function normalizeLaunch(input) {
   return { ...input, name, symbol, description, firstBuyAmount, inscribedMint: input.launchMode === 'inscribed' ? input.inscribedMint.trim() : '', socials, ...socials, feeRecipients, creatorFeeBps: Math.round(Number(input.creatorFeePercent || 0) * 100), holderReward: Boolean(input.holderReward) };
 }
 export async function createLaunchDraft(input, file, walletAddress, progress) {
-  const fields = normalizeLaunch(input);
-  if (fields.launchMode === 'upload') {
-    if (!file || !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type) || !file.size || file.size > 5 * 1024 * 1024) throw new Error('Choose a PNG, JPG, WebP or GIF image up to 5 MB.');
-    const upload = file => timeout(base44.integrations.Core.UploadPublicFile({ file }), 60000, 'Upload timed out. No transaction was requested.');
-    progress('Uploading the coin image…');
-    fields.imageUrl = (await upload(file)).file_url;
-    progress('Saving public metadata…');
-    const metadata = { name: fields.name, symbol: fields.symbol, description: fields.description, image: fields.imageUrl, showName: true, ...fields.socials };
-    fields.metadataUrl = (await upload(new File([JSON.stringify(metadata)], 'm.json', { type: 'application/json' }))).file_url;
-    if (new TextEncoder().encode(fields.metadataUrl).length > 200) throw new Error('The metadata URL exceeds the 200-byte limit. Nothing was signed.');
-  } else if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(fields.inscribedMint)) throw new Error('Enter a valid inscribed NFT mint address.');
+  const fields = normalizeLaunch({ ...input, launchMode: 'upload', inscribedMint: '' });
+  if (!file || !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type) || !file.size || file.size > 5 * 1024 * 1024) throw new Error('Choose a PNG, JPG, WebP or GIF image up to 5 MB.');
+  const upload = file => timeout(base44.integrations.Core.UploadPublicFile({ file }), 60000, 'Upload timed out. No transaction was requested.');
+  progress('Uploading the coin image…');
+  fields.imageUrl = (await upload(file)).file_url;
+  progress('Saving public metadata…');
+  const metadata = { name: fields.name, symbol: fields.symbol, description: fields.description, image: fields.imageUrl, showName: true, ...fields.socials };
+  fields.metadataUrl = (await upload(new File([JSON.stringify(metadata)], 'm.json', { type: 'application/json' }))).file_url;
+  if (new TextEncoder().encode(fields.metadataUrl).length > 200) throw new Error('The metadata URL exceeds the 200-byte limit. Nothing was signed.');
   const requestId = crypto.randomUUID(), mint = await launchMintKey(requestId);
   return { ...fields, requestId, coinMint: mint.address, walletAddress, status: 'draft' };
 }
