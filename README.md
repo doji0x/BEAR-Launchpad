@@ -1,4 +1,4 @@
-# Curated
+# Bear
 
 **Curated** is a Solana application for creating coins, inscribing artwork, and verifying that supported images are present in on-chain data. It also offers wallet-based profiles and a social feed. The application distinguishes a coin’s *served metadata*—which may be updated where the launch supports it—from the image bytes and transaction history independently verifiable on Solana.
 
