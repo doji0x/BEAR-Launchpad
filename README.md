@@ -1,4 +1,4 @@
-# BEAR-Launchpad
+# Bear (BEAR-Launchpad)
 
 **BEAR · The Black Bear** is a Solana launchpad focused on token buybacks and permanent supply burns. Coin launching is currently restricted to administrators in the app interface; wallet-based profiles, the social feed, and supported creator metadata editing remain available.
 
