@@ -42,12 +42,15 @@ for (const firstBuy of [false, true]) Deno.test(`actual Pump ${firstBuy ? 'creat
     name: input.name, symbol: input.symbol, uri: metadataUriFor(coinMint), mayhemMode: false, holderReward: false };
   // Synthetic global account DATA for offline construction, not a live quote.
   const instructions = firstBuy ? await PUMP_SDK.createV2AndBuyV2Instructions({ ...shared,
-    global: { feeRecipient: Keypair.generate().publicKey, feeRecipients: [] },
+    global: { feeRecipient: Keypair.generate().publicKey, feeRecipients: [], buybackFeeRecipients: [Keypair.generate().publicKey] },
     amount: new BN(1000), quoteAmount: new BN(1000000), quoteMint: new PublicKey(WSOL) }) :
     [await PUMP_SDK.createV2Instruction(shared)];
   if (firstBuy) {
     const buy = instructions.find(ix => equalBytes(new Uint8Array(ix.data.subarray(0, 8)), BUY));
-    assert.ok(buy); assert.equal(buy.data.length, 24);
+    assert.ok(buy); assert.equal(buy.data.length, 25); assert.equal(buy.data[24], 0);
+    // Legacy V1 signing remains read-only. Reconstruct its historical 24-byte
+    // buy payload by removing SDK 4's optional partial_fill=false tail.
+    buy.data = buy.data.subarray(0, 24);
     new DataView(buy.data.buffer, buy.data.byteOffset, buy.data.byteLength).setBigUint64(16, 1000000n, true);
   }
   const latest = { blockhash: Keypair.generate().publicKey.toBase58(), lastValidBlockHeight: 200 };

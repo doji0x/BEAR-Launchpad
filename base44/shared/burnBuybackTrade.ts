@@ -1,8 +1,10 @@
 import { Buffer } from 'node:buffer';
 import BN from 'npm:bn.js@5.2.2';
 import { PublicKey } from 'npm:@solana/web3.js@1.98.4';
-import { PUMP_SDK, PUMP_PROGRAM_ID, PUMP_AMM_PROGRAM_ID, getPumpProgram, getPumpAmmProgram, getBuyTokenAmountFromSolAmount, canonicalPumpPoolPda, bondingCurvePda } from 'npm:@pump-fun/pump-sdk@2.0.0';
-import { OnlinePumpAmmSdk, PUMP_AMM_SDK } from 'npm:@pump-fun/pump-swap-sdk@1.13.0';
+import runtimePumpSdk from './pumpSdkRuntime.ts';
+const { PUMP_SDK, PUMP_PROGRAM_ID, PUMP_AMM_PROGRAM_ID, getPumpProgram, getPumpAmmProgram, getBuyTokenAmountFromSolAmount, canonicalPumpPoolPda, bondingCurvePda } = runtimePumpSdk;
+import runtimePumpSwap from './pumpSwapRuntime.ts';
+const { OnlinePumpAmmSdk, PUMP_AMM_SDK } = runtimePumpSwap;
 import { burnMint, solMint } from './burnBuybackConfig.ts';
 
 // Use the published IDL to verify account compatibility before changing an

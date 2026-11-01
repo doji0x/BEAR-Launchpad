@@ -15,6 +15,7 @@ import AdminAstra from '@/pages/AdminAstra';
 
 import AdminLaunchLinks from '@/pages/AdminLaunchLinks';
 import AdminBuybacks from '@/pages/AdminBuybacks';
+import AdminLaunchPolicy from '@/pages/AdminLaunchPolicy';
 import AdminMetadataOverride from '@/pages/AdminMetadataOverride';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -99,6 +100,7 @@ const AuthenticatedApp = () => {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?returnTo=%2Fadmin%2Fbuybacks" replace />} />}>
         <Route path="/admin/buybacks" element={<AdminBuybacks />} />
       </Route>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?returnTo=%2Fadmin%2Flaunch-policy" replace />} />}><Route element={<AdminOnlyRoute />}><Route path="/admin/launch-policy" element={<AdminLaunchPolicy />} /></Route></Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

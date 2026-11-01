@@ -1,7 +1,8 @@
 import { Buffer } from 'node:buffer';
 import { PublicKey, VersionedTransaction, SystemProgram } from 'npm:@solana/web3.js@1.98.4';
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync, unpackMint, unpackAccount, createBurnCheckedInstruction, createCloseAccountInstruction } from 'npm:@solana/spl-token@0.4.15';
-import { PUMP_PROGRAM_ID, PUMP_AMM_PROGRAM_ID, getPumpProgram, getPumpAmmProgram } from 'npm:@pump-fun/pump-sdk@2.0.0';
+import runtimePumpSdk from './pumpSdkRuntime.ts';
+const { PUMP_PROGRAM_ID, PUMP_AMM_PROGRAM_ID, getPumpProgram, getPumpAmmProgram } = runtimePumpSdk;
 import { CLAIM_MINT, CLAIM_WALLET, claimAssert } from './creatorClaimsCore.js';
 import { claimTools, messageHash } from './creatorClaims.ts';
 import { burnTrade } from './burnBuybackTrade.ts';
